@@ -104,6 +104,23 @@ pipeline {
                             }
                         } 
                     }
+
+                    // Check for missing files in checksum file
+                    def filesInChecksum = checksumContent.readLines().collect { line ->
+                        line.split()[1].trim()
+                    }.findAll { filename ->
+                        !filename.endsWith("checksum.txt")
+                    }
+            
+                    def filesInWorkspace = sh(script: "ls ${PWD}", returnStdout: true).trim().split()
+
+                    def missingFiles = filesInChecksum.findAll { filename ->
+                        !filesInWorkspace.contains(filename)
+                    }
+            
+                    if (missingFiles) {
+                        error "Missing files in workspace: ${missingFiles.join(', ')}"
+                    }
                 }
             }
         }
