@@ -26,13 +26,6 @@ pipeline {
                         sh """
                             export AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
                             export AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
-                            set +x    
-                            TEMP_CREDS=$(aws sts assume-role --role-arn "arn:aws:iam::058264284230:role/sa-ebd-001" --role-session-name "ststoebd")
- 
-                            export AWS_ACCESS_KEY_ID=$(echo $TEMP_CREDS | jq -r '.Credentials.AccessKeyId')
-                            export AWS_SECRET_ACCESS_KEY=$(echo $TEMP_CREDS | jq -r '.Credentials.SecretAccessKey')
-                            export AWS_SESSION_TOKEN=$(echo $TEMP_CREDS | jq -r '.Credentials.SessionToken')
-                            set -x
                             aws s3 cp ${s3_path} ${PWD}/ --debug
                         """
                     }
