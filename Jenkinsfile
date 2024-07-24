@@ -8,28 +8,26 @@ pipeline {
     stages {
         stage('Code Checkout') {
             steps {
-                git branch: 'main', credentialsId: 'GitHub_Credentials', url: 'https://github.com/Singh-1991/Groovy-Mismatch-Values.git'
+                git branch: 'main', credentialsId: 'GitHub_Credentials', url: 'https://github.com/Singh-1991/Groovy-Same-Values.git'
             }
         }
 
         stage('Get Artifact') {
             steps {
-                container('awscli-image') {
-                    script {
-                        def versionsManifest = readYaml file: 'versions_manifest.yml'
-                        def s3_path = versionsManifest.version_info.ML_model.cloud_model.path
-                        def tarball_name = s3_path.tokenize('/')[-1]
-                        // Ensure PWD is correctly defined within the container
-                        def PWD = sh(script: "echo \$(pwd)", returnStdout: true).trim()
+                script {
+                    def versionsManifest = readYaml file: 'versions_manifest.yml'
+                    def s3_path = versionsManifest.version_info.ML_model.cloud_model.path
+                    def tarball_name = s3_path.tokenize('/')[-1]
+                    // Ensure PWD is correctly defined within the container
+                    def PWD = sh(script: "echo \$(pwd)", returnStdout: true).trim()
                     
-                        // Copy artifact from S3 to PWD
-                        withCredentials([usernamePassword(credentialsId: 'AWS-Credentials', passwordVariable: 'AWS_SECRET_ACCESS_KEY', usernameVariable: 'AWS_ACCESS_KEY_ID')]) {
-                            sh """
-                                export AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
-                                export AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
-                                aws s3 cp ${s3_path} ${PWD}/ --debug
-                            """
-                        }
+                    // Copy artifact from S3 to PWD
+                    withCredentials([usernamePassword(credentialsId: 'AWS-Credentials', passwordVariable: 'AWS_SECRET_ACCESS_KEY', usernameVariable: 'AWS_ACCESS_KEY_ID')]) {
+                        sh """
+                            export AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
+                            export AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
+                            aws s3 cp ${s3_path} ${PWD}/ --debug
+                        """
                     }
                 }
             }
